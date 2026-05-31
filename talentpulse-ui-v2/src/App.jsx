@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 
 // Layouts
 import { AuthLayout } from './layouts/AuthLayout/AuthLayout';
@@ -29,6 +30,7 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+      <Analytics />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         
