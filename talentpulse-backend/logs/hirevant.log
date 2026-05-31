@@ -1,0 +1,5 @@
+INFO 2026-06-01 00:34:47,208 autoreload 25556 24892 Watching for file changes with StatReloader
+INFO 2026-06-01 00:38:36,253 autoreload 25556 24892 C:\Users\ssale\.gemini\antigravity\scratch\talentpulse-backend\config\settings.py changed, reloading.
+INFO 2026-06-01 00:38:39,793 autoreload 29176 28220 Watching for file changes with StatReloader
+INFO 2026-06-01 00:38:53,385 autoreload 29176 28220 C:\Users\ssale\.gemini\antigravity\scratch\talentpulse-backend\config\settings.py changed, reloading.
+INFO 2026-06-01 00:38:56,398 autoreload 25356 30644 Watching for file changes with StatReloader
