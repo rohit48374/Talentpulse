@@ -1,0 +1,45 @@
+services:
+  # ─────────────────────────────────────────────
+  # Django Backend Web Service
+  # ─────────────────────────────────────────────
+  - type: web
+    name: talentpulse-backend
+    runtime: python
+    rootDir: Talentpulse/talentpulse-backend
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    plan: free
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: talentpulse-db
+          property: connectionString
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://talentpulse-ui.vercel.app"
+      - key: FRONTEND_URL
+        value: "https://talentpulse-ui.vercel.app"
+      - key: EMAIL_BACKEND
+        value: "django.core.mail.backends.smtp.EmailBackend"
+      - key: EMAIL_HOST
+        value: "smtp.gmail.com"
+      - key: EMAIL_PORT
+        value: "587"
+      - key: EMAIL_USE_TLS
+        value: "True"
+
+  # ─────────────────────────────────────────────
+  # PostgreSQL Database
+  # ─────────────────────────────────────────────
+databases:
+  - name: talentpulse-db
+    plan: free
+    databaseName: talentpulse
+    user: talentpulse_user

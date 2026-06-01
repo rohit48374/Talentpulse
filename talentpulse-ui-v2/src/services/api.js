@@ -1,12 +1,9 @@
 import axios from 'axios';
 
-const getBackendURL = () => {
-  const hostname = window.location.hostname;
-  return `http://${hostname}:8000/api`;
-};
-
+// In production (Vercel), VITE_API_URL must be set to the Render backend URL.
+// In local development, falls back to localhost:8000.
 const api = axios.create({
-  baseURL: getBackendURL(),
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
 });
 
 api.interceptors.request.use((config) => {

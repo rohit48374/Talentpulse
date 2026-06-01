@@ -7,6 +7,7 @@ from pathlib import Path
 from datetime import timedelta
 import os
 from decouple import config, Csv
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -57,6 +58,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -89,33 +91,43 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # ============================================
 # DATABASE CONFIGURATION
-# Set DB_ENGINE in .env to switch between SQLite and MySQL/PostgreSQL.
+# Priority:
+#   1. DATABASE_URL env var (Render/cloud injects this for PostgreSQL)
+#   2. DB_ENGINE in .env (local MySQL/SQLite fallback)
 # ============================================
 
-DB_ENGINE = config('DB_ENGINE', default='django.db.backends.sqlite3')
+DATABASE_URL = config('DATABASE_URL', default=None)
 
-if 'sqlite3' in DB_ENGINE:
+if DATABASE_URL:
+    # Cloud deployment — use DATABASE_URL (PostgreSQL on Render, etc.)
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / config('DB_NAME', default='db.sqlite3'),
-        }
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
     }
 else:
-    DATABASES = {
-        'default': {
-            'ENGINE': DB_ENGINE,
-            'NAME': config('DB_NAME', default='hirevant'),
-            'USER': config('DB_USER', default=''),
-            'PASSWORD': config('DB_PASSWORD', default=''),
-            'HOST': config('DB_HOST', default='127.0.0.1'),
-            'PORT': config('DB_PORT', default='3306', cast=int),
-            'OPTIONS': {
-                'charset': 'utf8mb4',
-                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+    DB_ENGINE = config('DB_ENGINE', default='django.db.backends.sqlite3')
+
+    if 'sqlite3' in DB_ENGINE:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / config('DB_NAME', default='db.sqlite3'),
             }
         }
-    }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': DB_ENGINE,
+                'NAME': config('DB_NAME', default='hirevant'),
+                'USER': config('DB_USER', default=''),
+                'PASSWORD': config('DB_PASSWORD', default=''),
+                'HOST': config('DB_HOST', default='127.0.0.1'),
+                'PORT': config('DB_PORT', default='3306', cast=int),
+                'OPTIONS': {
+                    'charset': 'utf8mb4',
+                    'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+                }
+            }
+        }
 
 # ============================================
 # PASSWORD VALIDATION
@@ -154,6 +166,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# WhiteNoise — serve compressed static files efficiently in production
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
