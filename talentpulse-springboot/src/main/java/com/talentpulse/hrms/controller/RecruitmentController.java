@@ -3,6 +3,7 @@ package com.talentpulse.hrms.controller;
 import com.talentpulse.hrms.model.*;
 import com.talentpulse.hrms.repository.*;
 import com.talentpulse.hrms.service.UserService;
+import com.talentpulse.hrms.service.EmailService;
 import com.talentpulse.hrms.core.dto.PaginatedResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

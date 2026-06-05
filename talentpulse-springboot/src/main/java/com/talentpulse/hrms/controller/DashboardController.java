@@ -824,8 +824,9 @@ public class DashboardController {
                 // Setup attendance records
                 LocalDate curr = app.getStartDate();
                 while (!curr.isAfter(app.getEndDate())) {
-                    AttendanceRecord ar = attendanceRecordRepository.findByEmployeeIdAndDate(app.getEmployee().getId(), curr)
-                            .orElseGet(() -> AttendanceRecord.builder().employee(app.getEmployee()).date(curr).build());
+                    final LocalDate finalCurr = curr;
+                    AttendanceRecord ar = attendanceRecordRepository.findByEmployeeIdAndDate(app.getEmployee().getId(), finalCurr)
+                            .orElseGet(() -> AttendanceRecord.builder().employee(app.getEmployee()).date(finalCurr).build());
                     ar.setStatus("leave");
                     ar.setRemarks("On Approved Leave");
                     attendanceRecordRepository.save(ar);
@@ -1075,11 +1076,17 @@ public class DashboardController {
             dept = departmentRepository.findByName(deptName).orElse(null);
         }
 
+        GradeStructure grade = null;
+        if (gradeStr != null) {
+            grade = gradeStructureRepository.findByGrade(gradeStr).orElse(null);
+        }
+
         JobRequisition req = JobRequisition.builder()
                 .title(title)
-                .department(dept)
-                .grade(gradeStr)
-                .vacanciesCount(vacancies)
+                .department(deptName)
+                .departmentRef(dept)
+                .grade(grade)
+                .positionCount(vacancies)
                 .status(reqStatus)
                 .createdBy(userOpt.get())
                 .build();
@@ -1100,7 +1107,7 @@ public class DashboardController {
             m.put("status", c.getStatus());
             m.put("job_requisition", c.getJobRequisition() != null ? c.getJobRequisition().getId() : null);
             m.put("job_title", c.getJobRequisition() != null ? c.getJobRequisition().getTitle() : null);
-            m.put("applied_date", c.getCreatedAt() != null ? c.getCreatedAt().toString() : null);
+            m.put("applied_date", c.getAppliedDate() != null ? c.getAppliedDate().toString() : null);
             return m;
         }).collect(Collectors.toList());
         return ResponseEntity.ok(list);
@@ -1119,9 +1126,9 @@ public class DashboardController {
 
         InterviewRound round = InterviewRound.builder()
                 .candidate(candOpt.get())
-                .roundName(roundName)
+                .requisition(candOpt.get().getJobRequisition())
+                .interviewType(roundName)
                 .scheduledDate(scheduled)
-                .mode(mode)
                 .meetingLink(meet)
                 .status("scheduled")
                 .build();
@@ -1142,9 +1149,12 @@ public class DashboardController {
 
         OfferLetter offer = OfferLetter.builder()
                 .candidate(candOpt.get())
-                .offeredSalary(salary)
+                .requisition(candOpt.get().getJobRequisition())
+                .positionTitle(candOpt.get().getJobRequisition() != null ? candOpt.get().getJobRequisition().getTitle() : "Candidate Offer")
+                .salary(salary)
+                .startDate(joining)
                 .joiningDate(joining)
-                .validityDate(validity)
+                .offerValidity(validity)
                 .status("sent")
                 .build();
 
@@ -1182,7 +1192,7 @@ public class DashboardController {
                         .monthYear(monthYear)
                         .status("draft")
                         .totalEmployees(0)
-                        .totalSalary(BigDecimal.ZERO)
+                        .totalGrossSalary(BigDecimal.ZERO)
                         .totalDeductions(BigDecimal.ZERO)
                         .totalNetSalary(BigDecimal.ZERO)
                         .build()));
@@ -1210,12 +1220,16 @@ public class DashboardController {
             Payslip payslip = Payslip.builder()
                     .payrollRun(run)
                     .employee(emp.getUser())
-                    .basicSalary(baseSalary)
-                    .allowances(allowance)
+                    .baseSalary(baseSalary)
+                    .hra(BigDecimal.ZERO)
+                    .da(BigDecimal.ZERO)
+                    .otherAllowances(allowance)
                     .grossSalary(gross)
-                    .deductions(deductions)
-                    .netSalary(net)
+                    .pfContribution(BigDecimal.ZERO)
+                    .it(BigDecimal.ZERO)
+                    .otherDeductions(deductions)
                     .totalDeductions(deductions)
+                    .netSalary(net)
                     .status("draft")
                     .build();
 
@@ -1228,7 +1242,7 @@ public class DashboardController {
 
         run.setStatus("processed");
         run.setTotalEmployees(employees.size());
-        run.setTotalSalary(totalSal);
+        run.setTotalGrossSalary(totalSal);
         run.setTotalDeductions(totalDed);
         run.setTotalNetSalary(totalNet);
         payrollRunRepository.save(run);
