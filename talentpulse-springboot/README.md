@@ -1,4 +1,4 @@
-# TalentPulse HRMS - Spring Boot Backend
+# Hirevant HRMS - Spring Boot Backend
 
 This is the professional Spring Boot backend service for the TalentPulse Human Resource Management System (HRMS). It is built using Spring Boot 3.2.5, Spring Security, Spring Data JPA, and SQLite.
 
