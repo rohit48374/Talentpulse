@@ -121,17 +121,35 @@ public class PayrollController {
                 Payslip payslip = payslipRepository.findByPayrollRunIdAndEmployeeId(run.getId(), s.getEmployee().getId())
                         .orElseGet(() -> Payslip.builder().payrollRun(run).employee(s.getEmployee()).build());
 
+                // Sum up approved bonuses for this employee for the matching monthYear
+                BigDecimal totalBonus = BigDecimal.ZERO;
+                List<Bonus> bonuses = bonusRepository.findByEmployeeId(s.getEmployee().getId());
+                if (bonuses != null) {
+                    for (Bonus b : bonuses) {
+                        if (run.getMonthYear().equals(b.getMonthYear()) && "approved".equalsIgnoreCase(b.getStatus())) {
+                            totalBonus = totalBonus.add(b.getAmount());
+                        }
+                    }
+                }
+
                 payslip.setBaseSalary(s.getBaseSalary());
                 payslip.setHra(s.getHra());
                 payslip.setDa(s.getDa());
                 payslip.setOtherAllowances(s.getOtherAllowances());
-                payslip.setGrossSalary(s.getGrossSalary());
+                payslip.setBonus(totalBonus);
+                
+                BigDecimal grossSalary = s.getGrossSalary().add(totalBonus);
+                payslip.setGrossSalary(grossSalary);
+                
                 payslip.setPfContribution(s.getPfContribution());
                 payslip.setIt(s.getIt());
                 payslip.setOtherDeductions(s.getOtherDeductions());
                 payslip.setTotalDeductions(s.getTotalDeductions());
-                payslip.setNetSalary(s.getNetSalary());
+                
+                BigDecimal netSalary = grossSalary.subtract(s.getTotalDeductions());
+                payslip.setNetSalary(netSalary);
                 payslip.setStatus("generated");
+                
                 payslipRepository.save(payslip);
             }
         }

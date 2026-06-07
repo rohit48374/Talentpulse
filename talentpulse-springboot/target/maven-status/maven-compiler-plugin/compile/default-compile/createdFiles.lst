@@ -30,6 +30,7 @@ com\talentpulse\hrms\model\AttendanceRecord.class
 com\talentpulse\hrms\repository\DepartmentAnalyticsRepository.class
 com\talentpulse\hrms\model\EmployeeAppraisal$EmployeeAppraisalBuilder.class
 com\talentpulse\hrms\repository\UserRepository.class
+com\talentpulse\hrms\jsf\bean\SessionBean.class
 com\talentpulse\hrms\repository\DesignationRepository.class
 com\talentpulse\hrms\controller\UserController.class
 com\talentpulse\hrms\repository\GrievanceRepository.class
@@ -65,6 +66,7 @@ com\talentpulse\hrms\model\EmployeeProfile.class
 com\talentpulse\hrms\controller\PayrollController.class
 com\talentpulse\hrms\model\HRReport$HRReportBuilder.class
 com\talentpulse\hrms\controller\AuditLogController.class
+com\talentpulse\hrms\jsf\bean\DashboardBean.class
 com\talentpulse\hrms\repository\EmployeeSkillRepository.class
 com\talentpulse\hrms\repository\EmployeeAppraisalRepository.class
 com\talentpulse\hrms\controller\CareersController.class

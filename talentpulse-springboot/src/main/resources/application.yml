@@ -48,3 +48,7 @@ app:
     dir: ${UPLOAD_DIR:media}
   candidate-portal-url: ${CANDIDATE_PORTAL_URL:http://localhost:5173}
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
+
+joinfaces:
+  primefaces:
+    theme: vela

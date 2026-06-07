@@ -165,6 +165,7 @@ public class AttendanceController {
         }
 
         LeaveApplication app = appOpt.get();
+        String oldStatus = app.getStatus();
         String status = (String) request.get("status");
         app.setStatus(status);
 
@@ -180,18 +181,29 @@ public class AttendanceController {
 
         leaveApplicationRepository.save(app);
 
-        // Update leave balances
+        // Update leave balances based on state transition
         String finYear = "2026-2027";
         Optional<LeaveBalance> balOpt = leaveBalanceRepository.findByEmployeeIdAndLeaveTypeIdAndFinancialYear(
                 app.getEmployee().getId(), app.getLeaveType().getId(), finYear);
 
-        if (balOpt.isPresent()) {
+        if (balOpt.isPresent() && !status.equalsIgnoreCase(oldStatus)) {
             LeaveBalance bal = balOpt.get();
-            // Subtract from pending
-            bal.setPendingDays(Math.max(0, bal.getPendingDays() - app.getNumberOfDays()));
-            if ("approved".equalsIgnoreCase(status)) {
-                bal.setUsedDays(bal.getUsedDays() + app.getNumberOfDays());
+            int days = app.getNumberOfDays();
+            
+            // 1. Revert previous status changes
+            if ("pending".equalsIgnoreCase(oldStatus)) {
+                bal.setPendingDays(Math.max(0, bal.getPendingDays() - days));
+            } else if ("approved".equalsIgnoreCase(oldStatus)) {
+                bal.setUsedDays(Math.max(0, bal.getUsedDays() - days));
             }
+            
+            // 2. Apply new status changes
+            if ("pending".equalsIgnoreCase(status)) {
+                bal.setPendingDays(bal.getPendingDays() + days);
+            } else if ("approved".equalsIgnoreCase(status)) {
+                bal.setUsedDays(bal.getUsedDays() + days);
+            }
+            
             leaveBalanceRepository.save(bal);
         }
 
